@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -12,22 +13,21 @@ import {
 import clsx from 'clsx';
 import { useFinanceStore } from '../../store/finance';
 import { ThemeToggle } from '../ui/ThemeToggle';
-import type { ViewTab, Role } from '../../lib/types';
+import type { Role } from '../../lib/types';
 
 interface NavItem {
-  key: ViewTab;
+  path: string;
   label: string;
   icon: typeof LayoutDashboard;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
 ];
 
 export function Sidebar() {
-  const activeView = useFinanceStore((s) => s.activeView);
-  const setActiveView = useFinanceStore((s) => s.setActiveView);
+  const location = useLocation();
   const sidebarOpen = useFinanceStore((s) => s.sidebarOpen);
   const toggleSidebar = useFinanceStore((s) => s.toggleSidebar);
   const role = useFinanceStore((s) => s.role);
@@ -51,7 +51,10 @@ export function Sidebar() {
       )}
     >
       {/* branding */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-gray-100 dark:border-white/[0.04]">
+      <Link 
+        to="/" 
+        className="flex items-center gap-3 px-4 h-16 border-b border-gray-100 dark:border-white/[0.04] hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
+      >
         <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-accent/10 text-accent shrink-0">
           <Wallet size={20} />
         </div>
@@ -61,22 +64,22 @@ export function Sidebar() {
               initial={{ opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: 'auto' }}
               exit={{ opacity: 0, width: 0 }}
-              className="text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap overflow-hidden"
+              className="text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap overflow-hidden block"
             >
               FinBoard
             </motion.span>
           )}
         </AnimatePresence>
-      </div>
+      </Link>
 
       {/* navigation */}
       <nav className="flex-1 py-4 px-3 space-y-1">
         {NAV_ITEMS.map((item) => {
-          const isActive = activeView === item.key;
+          const isActive = location.pathname === item.path;
           return (
-            <button
-              key={item.key}
-              onClick={() => setActiveView(item.key)}
+            <Link
+              key={item.path}
+              to={item.path}
               className={clsx(
                 'relative flex items-center gap-3 w-full rounded-xl px-3 h-10 text-sm font-medium transition-colors',
                 isActive
@@ -105,7 +108,7 @@ export function Sidebar() {
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
-            </button>
+            </Link>
           );
         })}
       </nav>

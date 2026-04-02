@@ -1,6 +1,7 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Download, FileJson, FileSpreadsheet } from 'lucide-react';
+import gsap from 'gsap';
 import { useFinanceStore, selectFilteredTransactions } from '../../store/finance';
 import { useDebounce } from '../../hooks/use-debounce';
 import { exportToCSV, exportToJSON } from '../../lib/export';
@@ -12,7 +13,20 @@ import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { SkeletonRow } from '../ui/Skeleton';
 
-const PAGE_SIZE = 15;
+const BATCH_SIZE = 30;
+
+function LoadingDots() {
+  return (
+    <div className="flex items-center justify-center gap-1.5 py-6">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="loading-dot w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500"
+        />
+      ))}
+    </div>
+  );
+}
 
 export function TxnTable() {
   const store = useFinanceStore();
@@ -31,9 +45,63 @@ export function TxnTable() {
     [stateWithDebouncedSearch]
   );
 
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // infinite scroll state
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
+  const [prevVisible, setPrevVisible] = useState(0);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const hasMore = visibleCount < filtered.length;
+
+  // reset visible count when filters/sort change
+  const filterKey = `${store.filters.search}|${store.filters.category}|${store.filters.type}|${store.filters.dateFrom}|${store.filters.dateTo}|${store.filters.sortBy}|${store.filters.sortDir}`;
+  useEffect(() => {
+    setVisibleCount(BATCH_SIZE);
+    setPrevVisible(0);
+  }, [filterKey]);
+
+  // IntersectionObserver for infinite scroll
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && visibleCount < filtered.length) {
+          setTimeout(() => {
+            setPrevVisible(visibleCount);
+            setVisibleCount((v) => Math.min(v + BATCH_SIZE, filtered.length));
+          }, 120);
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [visibleCount, filtered.length]);
+
+  // animate newly loaded rows with GSAP
+  useEffect(() => {
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced || !listRef.current) return;
+
+    const newRows = listRef.current.querySelectorAll('[data-new="true"]');
+    if (!newRows.length) return;
+
+    gsap.fromTo(newRows,
+      { opacity: 0, y: 14 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.3,
+        stagger: 0.035,
+        ease: 'power2.out',
+        onComplete: () => newRows.forEach((r) => r.removeAttribute('data-new')),
+      }
+    );
+  }, [visibleCount]);
 
   const [showExportMenu, setShowExportMenu] = useState(false);
 
@@ -168,33 +236,32 @@ export function TxnTable() {
             />
           )}
 
-          {/* rows */}
+          {/* rows with infinite scroll */}
           {!isLoading && visible.length > 0 && (
-            <div>
-              {visible.map((txn) => (
-                <TxnRow
+            <div ref={listRef}>
+              {visible.map((txn, i) => (
+                <div
                   key={txn.id}
-                  txn={txn}
-                  isAdmin={isAdmin}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
+                  className="transaction-row"
+                  data-new={i >= prevVisible && prevVisible > 0 ? 'true' : undefined}
+                  style={{ willChange: i >= prevVisible && prevVisible > 0 ? 'transform, opacity' : undefined }}
+                >
+                  <TxnRow
+                    txn={txn}
+                    isAdmin={isAdmin}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                </div>
               ))}
             </div>
           )}
 
-          {/* load more */}
-          {hasMore && (
-            <div className="flex justify-center py-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-              >
-                Show more ({filtered.length - visibleCount} remaining)
-              </Button>
-            </div>
-          )}
+          {/* sentinel for IntersectionObserver */}
+          <div ref={sentinelRef} style={{ height: 1 }} />
+
+          {/* loading dots (no button) */}
+          {hasMore && <LoadingDots />}
         </Card>
       </motion.div>
 

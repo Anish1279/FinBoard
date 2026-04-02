@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Menu,
   X,
@@ -12,24 +13,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import { useFinanceStore } from '../../store/finance';
 import { ThemeToggle } from '../ui/ThemeToggle';
-import type { ViewTab } from '../../lib/types';
 
 export function TopBar() {
-  const activeView = useFinanceStore((s) => s.activeView);
-  const setActiveView = useFinanceStore((s) => s.setActiveView);
+  const location = useLocation();
   const role = useFinanceStore((s) => s.role);
   const setRole = useFinanceStore((s) => s.setRole);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const navItems: { key: ViewTab; label: string; icon: typeof LayoutDashboard }[] = [
-    { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { key: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
+  const navItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
   ];
-
-  function handleNav(key: ViewTab) {
-    setActiveView(key);
-    setDrawerOpen(false);
-  }
 
   return (
     <>
@@ -93,11 +87,12 @@ export function TopBar() {
               {/* drawer nav */}
               <nav className="flex-1 p-3 space-y-1">
                 {navItems.map((item) => {
-                  const active = activeView === item.key;
+                  const active = location.pathname === item.path;
                   return (
-                    <button
-                      key={item.key}
-                      onClick={() => handleNav(item.key)}
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setDrawerOpen(false)}
                       className={clsx(
                         'flex items-center gap-3 w-full rounded-xl px-3 h-11 text-sm font-medium transition-colors',
                         active
@@ -107,7 +102,7 @@ export function TopBar() {
                     >
                       <item.icon size={19} />
                       <span>{item.label}</span>
-                    </button>
+                    </Link>
                   );
                 })}
               </nav>
