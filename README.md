@@ -1,200 +1,244 @@
-# FinBoard - Personal Finance Dashboard
+<div align="center">
 
-A premium-looking personal finance dashboard built with React, TypeScript, and modern frontend tooling. Inspired by the design langauge of fintech products like CRED and Stripe — clean, minimal, and data-rich.
+```
+███████╗██╗███╗   ██╗██████╗  ██████╗  █████╗ ██████╗ ██████╗ 
+██╔════╝██║████╗  ██║██╔══██╗██╔═══██╗██╔══██╗██╔══██╗██╔══██╗
+█████╗  ██║██╔██╗ ██║██████╔╝██║   ██║███████║██████╔╝██║  ██║
+██╔══╝  ██║██║╚██╗██║██╔══██╗██║   ██║██╔══██║██╔══██╗██║  ██║
+██║     ██║██║ ╚████║██████╔╝╚██████╔╝██║  ██║██║  ██║██████╔╝
+╚═╝     ╚═╝╚═╝  ╚═══╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ 
+```
 
----
+### *Your financial story, beautifully told.*
 
-## Table of Content
+<br />
 
-- [Feature Overview](#feature-overview)
-- [Tech Stack and Why](#tech-stack-and-why)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Architecture Decisions](#architecture-decisions)
-- [Performance Choices](#performance-choices)
-- [UI and UX Details](#ui-and-ux-details)
-- [Assumptions Made](#assumptions-made)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Recharts](https://img.shields.io/badge/Recharts-2.x-22C55E?style=for-the-badge)](https://recharts.org)
 
----
+<br/>
 
-## Feature Overview
+![Dashboard Preview](./public/preview-dashboard.png)
 
-### Dashboard View
-- **Summary stat cards** — Balance, Income, Expenses, and Savings Rate with month-over-month trends
-- **Balance trend chart** — Area chart showing cumulative balance growth over 6 months
-- **Category breakdown** — Donut chart with percentage split across expense categorys
-- **Monthly income vs expenses** — Grouped bar chart comparision for each month
-- **Quick insights panel** — Key observations like highest spending category, daily average spend, biggest single expense, etc.
-
-### Transactions View
-- Full transaction list with category icons, badges, and formated amounts
-- **Advanced filtering** — by type (income/expense), category, date range
-- **Search** with debounced input to avoid unnessary re-renders
-- **Sorting** — by date, amount, or category
-- **Pagination** — progressive "show more" loading for large datasets
-- **Add / Edit / Delete** transactions (admin role only)
-- **Export** — download filtered transactions as CSV or JSON
-
-### Additional Features
-- **Dark mode** (default) with smooth toggle to light mode, persisted in localStorage
-- **Role-based UI** — Admin gets full CRUD actions; Viewer is read-only. Switchable from sidebar/drawer
-- **Responsive design** — works on mobile, tablet, laptop, and large desktop
-- **Loading skeletons** — shimmer placeholders while data is fetching
-- **Empty states** — helpfull messages when no transactions match filters
-- **Mock API layer** — simulates realistic network delays (200-600ms)
-- **Data persistence** — all transactions saved in localStorage between sessions
-- **Optimistic deletes** — UI updates immediatly, rolls back on failure
+</div>
 
 ---
 
-## Tech Stack and Why
+## ✦ What is FinBoard?
 
-| Technology | Purpose | Reasoning |
-|---|---|---|
-| **React 18 + Vite** | UI framework & bundler | Fast HMR, instant server startup, optimised production builds |
-| **TypeScript** | Type safety | Catches bugs at compile time, improves IDE expirience |
-| **Tailwind CSS 3** | Styling | Utility-first approach enables rapid UI building with consistent spacing and colors. Dark mode via class strategy |
-| **Zustand** | State management | Minimal boilerplate compared to Redux, no context providers needed, excellent performance with selector-based subscriptions |
-| **Recharts** | Data visualization | React-native charting library, highly customisable, responsive containers |
-| **Framer Motion** | Animations | Declarative API for smooth page transitions, modal animations, and micro-interactions |
-| **Lucide React** | Icons | Consistent, lightweight icon set that matches modern UI aesthetic |
-| **date-fns** | Date formatting | Tree-shakeable, much lighter than moment.js |
-| **clsx** | Class composition | Conditional classNames without messy template literals |
+**FinBoard** is a production-ready, role-aware finance dashboard that transforms raw transaction data into a living picture of your financial health. Built as a frontend-first application with zero backend dependency, it delivers an experience that feels anything but mock — dark by default, insight-forward by design, and polished at every pixel.
+
+> Built for a Personal Project — but designed like a product you'd actually ship.
 
 ---
 
-## Getting Started
+## ✦ Feature Highlights
 
-### Prerequisits
+### 🏠 Dashboard Overview
+The nerve center of your finances. At a glance:
 
-- Node.js 18 or higher
-- npm 9+ (or pnpm/yarn)
+| Card | What it tells you |
+|---|---|
+| **Total Balance** | Your cumulative net position |
+| **Total Income** | Aggregated earnings across all sources |
+| **Total Expenses** | Spend totals with month-over-month delta |
+| **Savings Rate** | The percentage of income actually saved |
+
+Three live visualizations back these numbers up:
+- **Balance Trend** — A smooth area chart tracing your financial trajectory over 6 months
+- **Spending Breakdown** — A donut chart slicing expenses across 9 categories (Rent, Shopping, Bills & Utilities, Food & Dining, Travel, Health, and more)
+- **Monthly Income vs Expenses** — Side-by-side grouped bars for each month, making surpluses and deficits instantly readable
+
+### 💳 Transactions
+A searchable, filterable, sortable list of **99 transactions** — with everything you need:
+
+- 🔍 **Search** by description, merchant, or keyword
+- 🏷️ **Filter** by type (Income / Expense) and by category
+- 📅 **Date range** picker to scope any window of time
+- ↕️ **Sort** by: Newest First · Oldest First · Highest Amount · Lowest Amount · Category A–Z
+- 📤 **Export** transactions to CSV/JSON with one click
+
+Every transaction shows its date, category badge (color-coded), icon, description, and signed amount — green for income, red for expense.
+
+### 🔐 Role-Based UI
+No backend needed. Roles are simulated on the frontend and toggle instantly from the sidebar:
+
+| Role | Capabilities |
+|---|---|
+| **Admin** | View all data · Add transactions · Edit existing entries |
+| **Viewer** | Read-only access · No mutation controls shown |
+
+Switch between roles mid-session — the UI adapts in real time.
+
+### 💡 Quick Insights
+Auto-computed observations that surface what matters:
+
+- 🏷️ **Highest Spending Category** — with total and transaction count
+- 📈 **Monthly Change** — expenses vs prior month, signed and colored
+- 💸 **Avg Daily Spend** — calculated across entire transaction history
+- 🔺 **Largest Single Expense** — flagged with its description
+- 📂 **Active Categories** — count of categories with at least one expense
+
+---
+
+## ✦ Tech Stack
+
+```
+FinBoard
+├── React 19             → Component model & rendering
+├── TypeScript           → End-to-end type safety
+├── Vite 6               → Lightning-fast dev server & bundler
+├── Tailwind CSS 3       → Utility-first styling with dark mode
+├── Recharts 2           → Composable, animated data visualizations
+├── React Context API    → Global state (transactions, filters, role)
+└── localStorage         → Persistence across sessions
+```
+
+---
+
+## ✦ Architecture & Design Decisions
+
+### State Management — Context + Reducer
+Rather than reaching for Redux, FinBoard uses React's built-in **Context API** paired with `useReducer`. This keeps the state logic centralized and predictable without the boilerplate overhead — the right tool for this scope.
+
+```
+AppContext
+├── transactions[]       → Source of truth for all financial data
+├── filters              → { type, category, dateFrom, dateTo, sortBy, query }
+├── role                 → 'admin' | 'viewer'
+└── theme                → 'dark' | 'light'
+```
+
+Derived values (totals, insights, chart data) are computed via `useMemo` to avoid redundant recalculation on every render.
+
+### Data Persistence — localStorage
+All transactions added or edited by Admin are written to `localStorage`. On mount, the app hydrates from storage — falling back gracefully to the bundled mock dataset if nothing is found. This means your data survives page refreshes.
+
+### Role-Based Rendering
+RBAC is implemented as a simple conditional rendering pattern. A `useRole()` hook exposes the current role, and components use it to gate Admin-only controls (Add Transaction button, Edit/Delete actions). No routes are hidden — the UI simply removes affordances the Viewer has no business seeing.
+
+### Responsive Layout
+- **Mobile** (`< 768px`): Single column, collapsible sidebar, stacked cards
+- **Tablet** (`768px–1024px`): Two-column grid, condensed charts
+- **Laptop / Desktop** (`> 1024px`): Full sidebar + multi-column dashboard
+- **Large Screens** (`> 1440px`): Expanded chart canvases, wider spacing
+
+---
+
+## ✦ Getting Started
+
+### Prerequisites
+
+- **Node.js** ≥ 18.x
+- **npm** ≥ 9.x (or pnpm / yarn)
 
 ### Installation
 
 ```bash
-# clone and enter the project
-cd finance-dashboard
+# Clone the repository
+git clone https://github.com/your-username/finboard.git
+cd finboard
 
-# install dependancies
+# Install dependencies
 npm install
 
-# start development server
+# Start the development server
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`
+Open [http://localhost:5173](http://localhost:5173) — the dashboard loads instantly with mock data.
 
 ### Build for Production
 
 ```bash
-npm run build
-npm run preview   # preview the production build localy
+npm run build       # Outputs to /dist
+npm run preview     # Locally preview the production build
+```
+
+### Lint
+
+```bash
+npm run lint        # ESLint with TypeScript-aware rules
 ```
 
 ---
 
-## Project Structure
+## ✦ Project Structure
 
 ```
-src/
-├── components/
-│   ├── layout/          # Shell, Sidebar, TopBar (responsive navigation)
-│   ├── dashboard/       # StatCards, BalanceTrend, CategoryBreakdown,
-│   │                    # MonthlyComparison, QuickInsights, DashboardView
-│   ├── transactions/    # TxnTable, TxnFilters, TxnForm, TxnRow
-│   └── ui/              # Reusable primitives — Card, Button, Modal,
-│                        # Badge, Skeleton, EmptyState, ThemeToggle
-├── store/
-│   └── finance.ts       # Zustand store + derived selectors
-├── hooks/
-│   ├── use-debounce.ts  # Debounce hook for search input
-│   └── use-breakpoint.ts # Responsive breakpoint detection
-├── lib/
-│   ├── types.ts         # TypeScript type definations
-│   ├── constants.ts     # Category configs, filter defaults, storage keys
-│   ├── formatters.ts    # Currency, date, and percentage formatters
-│   ├── export.ts        # CSV and JSON export utilites
-│   ├── mock-data.ts     # 99 realistic seed transactions
-│   └── mock-api.ts      # Simulated async API with localStorage persistance
-├── App.tsx              # Root component, theme sync, data loading
-├── main.tsx             # React DOM entry point
-└── index.css            # Tailwind directives and custom styles
+finboard/
+├── public/                  # Static assets
+├── src/
+│   ├── components/
+│   │   ├── dashboard/       # SummaryCards, BalanceTrend, SpendingBreakdown,
+│   │   │                    #   MonthlyComparison, QuickInsights
+│   │   ├── transactions/    # TransactionList, TransactionRow, Filters,
+│   │   │                    #   SearchBar, SortDropdown, ExportButton
+│   │   ├── layout/          # Sidebar, Navbar, RoleSwitcher, ThemeToggle
+│   │   └── ui/              # Button, Badge, Card, Modal, EmptyState
+│   ├── context/
+│   │   └── AppContext.tsx   # Global state: transactions, filters, role, theme
+│   ├── hooks/
+│   │   ├── useTransactions.ts
+│   │   ├── useInsights.ts
+│   │   └── useRole.ts
+│   ├── data/
+│   │   └── mockTransactions.ts   # 99 seeded transactions across 6 months
+│   ├── types/
+│   │   └── index.ts              # Transaction, Role, Filter, Category types
+│   ├── utils/
+│   │   ├── formatCurrency.ts
+│   │   ├── exportData.ts         # CSV + JSON export logic
+│   │   └── computeInsights.ts
+│   ├── App.tsx
+│   └── main.tsx
+├── index.html
+├── tailwind.config.ts
+├── tsconfig.app.json
+└── vite.config.ts
 ```
 
 ---
 
-## Architecture Decisions
+## ✦ Mock Data
 
-### State Management — Zustand with Derived Selectors
+The app ships with **99 realistic transactions** spanning October 2025 – March 2026, distributed across 9 categories:
 
-Instead of putting derived data (totals, monthly breakdown, insights) inside the store, I compute them outside using pure selector functions. Components call `useMemo(() => selectTotals(transactions), [transactions])`. This way:
-
-- The store stays lean — only raw transactions, filters, and UI state
-- Derived state never goes stale or out of sync
-- No unnessary re-renders because selectors are memoized at the component level
-
-### Component Boundaries
-
-The UI is organized by **feature domain** (dashboard, transactions) rather than by component type. Shared primitives live in `ui/`. This keeps related things together and makes it easier to reason about each feature independantly.
-
-### Mock API with localStorage
-
-The mock API layer (`mock-api.ts`) wraps all data operations behind async functions that simulate real network conditions. This makes it trivial to swap in a real backend later — just replace the implementation inside `api.fetchTransactions()`, etc., without touching any component code.
-
-### Optimistic Updates
-
-For deletes, the UI removes the transaction immediatly before the API call completes. If the call fails, we rollback to the previous state. This makes the interface feel snappy while maintaining data integrity.
+| Category | Color |
+|---|---|
+| Rent | 🔵 Blue-gray |
+| Shopping | 🩷 Pink |
+| Bills & Utilities | 🔴 Red |
+| Food & Dining | 🟠 Orange |
+| Travel | 🔵 Indigo |
+| Health | 🩵 Teal |
+| Entertainment | 🟣 Purple |
+| Education | 🟡 Yellow |
+| Investments / Refunds | 🟢 Green |
 
 ---
 
-## Performance Choices
+## ✦ Screenshots
 
-1. **Debounced search** — 250ms debounce prevents filtering on every keystroke, reducing compute for large transaction lists
-2. **Memoized selectors** — Heavy computations (category breakdown, monthly aggregation, insights) are wrapped in `useMemo` and only recalculate when transactions actually change
-3. **`memo()` on TxnRow** — Transaction rows are wrapped in `React.memo` to skip re-render when parent re-renders but individual row data hasn't changed
-4. **Progressive loading** — Instead of rendering all 99+ rows at once, we show 15 initially with a "show more" button. This keeps initial render fast
-5. **Selector-based store subscriptions** — Each component subscribes to only the specific slice of state it needs (e.g., `useFinanceStore(s => s.theme)`), preventing cascade re-renders
-6. **Lightweight dependencies** — Chose date-fns over moment.js, Zustand over Redux Toolkit, clsx over classnames — all for smaller bundle footprint
+| Dashboard | Transactions | Insights |
+|---|---|---|
+| ![Dashboard](./public/screenshots/dashboard.png) | ![Transactions](./public/screenshots/transactions.png) | ![Insights](./public/screenshots/insights.png) |
 
 ---
 
-## UI and UX Details
+## ✦ License
 
-### Design Language
-- **Dark-first design** with carefully picked background layers (950 -> 900 -> 800) for depth
-- **Glass-morphism cards** with subtle backdrop blur and thin borders
-- **Color system**: Indigo accent for interactive elements, Emerald for income/positive, Coral for expenses/negative, Amber for savings
-- **Gradient overlays** on stat cards to give each metric a unique visual identiy
-
-### Responsive Strategy
-- **Desktop (1024px+)**: Persistent sidebar with navigation, role switcher, and theme toggle. Full grid layouts
-- **Tablet (640-1023px)**: Collapsible sidebar, 2-column grid for stat cards
-- **Mobile (<640px)**: Hamburger menu with slide-out drawer. Single column layouts. Touch-friendly tap targets
-
-### Micro-interactions
-- Staggered card entrance animations (each card slides in 60ms after the previous)
-- Smooth theme transition with icon rotation animation
-- Layout-aware active indicator on sidebar navigation (shared layout animation)
-- Hover-reveal for edit/delete actions on transaction rows
-- Modal entrance with scale + fade for premium feel
-
-### Accessibility
-- All interactive elements have proper `aria-label` attributes
-- Keyboard navigation support — buttons are focusable, modal closes on Escape
-- Color contrast ratios maintained across both themes
-- Focus-visible rings on all interactive elements
+© 2026 Anish Singh. All Rights Reserved.
 
 ---
 
-## Assumptions Made
+<div align="center">
 
-Since requirements did not specify these explictly, I made practical decisions:
+*Crafted with care — because good finance tools should feel good to use.*
 
-1. **Currency** — USD ($) as default. The formatter is centralised in one place, easy to change
-2. **Date range** — Mock data covers October 2025 to March 2026 (6 months of realistic transactions)
-3. **Role switching** — Simple toggle between Admin/Viewer rather than an authentication system. This is a UI-level demo of role-based behaviour
-4. **No routing library** — Since there are only 2 views (Dashboard and Transactions), I used state-based navigation instead of React Router. Keeps the bundle smaller and avoids unneeded complexity
-5. **Progressive loading over virtualisation** — For ~100 transactions, a "show more" pagination approach is simpler and sufficient. Virtualisation (react-window) would be added if the dataset grows beyond 1000+
-6. **localStorage for persistance** — Suitable for a demo/personal tool. A production app would use a backend database
-7. **Chart library** — Chose Recharts for its React-native approach and good dark mode support. Alternative would be Visx for more control but higher complexity
+**FinBoard** · React + TypeScript + Vite · Built to impress
+
+</div>
