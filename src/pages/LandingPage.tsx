@@ -1,5 +1,6 @@
 import { Hero } from '../components/landing/Hero';
 import { StickyShowcase } from '../components/landing/StickyShowcase';
+import { HorizontalJourney } from '../components/landing/HorizontalJourney';
 import { CurvedJourney } from '../components/landing/CurvedJourney';
 import { StatsRow } from '../components/landing/StatsRow';
 import { FinalCTA } from '../components/landing/FinalCTA';
@@ -22,6 +23,7 @@ export function LandingPage() {
       <div className="relative z-[2]">
         <Hero />
         <StickyShowcase />
+        <HorizontalJourney />
         <CurvedJourney />
         <StatsRow />
         <FinalCTA />
