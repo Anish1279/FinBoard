@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { Search, X, SlidersHorizontal } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { Search, X, SlidersHorizontal, Filter } from 'lucide-react';
 import clsx from 'clsx';
 import { useFinanceStore } from '../../store/finance';
 import { CATEGORIES } from '../../lib/constants';
@@ -10,7 +10,8 @@ export function TxnFilters() {
   const filters = useFinanceStore((s) => s.filters);
   const setFilters = useFinanceStore((s) => s.setFilters);
   const resetFilters = useFinanceStore((s) => s.resetFilters);
-
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  
   const hasActiveFilters =
     filters.search !== '' ||
     filters.category !== 'all' ||
@@ -86,15 +87,28 @@ export function TxnFilters() {
           )}
         </div>
 
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={resetFilters} icon={<X size={14} />}>
-            Clear filters
+        {/* mobile filter toggle & clear */}
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Button
+            className="sm:hidden flex-1 justify-center"
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowMobileFilters((s) => !s)}
+            icon={<Filter size={14} />}
+          >
+            Filters {hasActiveFilters && '(Active)'}
           </Button>
-        )}
+
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" onClick={resetFilters} icon={<X size={14} />}>
+              Clear
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* filter row */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={clsx('items-center gap-2', showMobileFilters ? 'flex flex-wrap' : 'hidden sm:flex sm:flex-wrap')}>
         <SlidersHorizontal size={14} className="text-gray-400 hidden sm:block" />
 
         <select value={filters.type} onChange={handleType} className={clsx(selectBase, 'w-auto')}>

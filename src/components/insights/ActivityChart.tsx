@@ -14,6 +14,7 @@ import { Card } from '../ui/Card';
 import { useFinanceStore } from '../../store/finance';
 import { formatCurrency } from '../../lib/formatters';
 import type { MonthlySummary } from '../../lib/types';
+import { useMounted } from '../../hooks/use-mounted';
 
 type ViewMode = 'monthly' | 'cumulative';
 
@@ -23,6 +24,7 @@ interface ActivityChartProps {
 
 export function ActivityChart({ monthly }: ActivityChartProps) {
   const theme = useFinanceStore((s) => s.theme);
+  const isMounted = useMounted();
   const [view, setView] = useState<ViewMode>('monthly');
 
   const data = view === 'cumulative'
@@ -68,71 +70,75 @@ export function ActivityChart({ monthly }: ActivityChartProps) {
         </div>
       </div>
       <div className="h-64 sm:h-72">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
-            <defs>
-              <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
-            <XAxis
-              dataKey="label"
-              tick={{ fill: axisColor, fontSize: 11 }}
-              tickLine={false}
-              axisLine={false}
-            />
-            <YAxis
-              tick={{ fill: axisColor, fontSize: 11 }}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(v: number) => formatCurrency(v, true)}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: theme === 'dark' ? '#1a2035' : '#fff',
-                border: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0',
-                borderRadius: 10,
-                boxShadow: '0 4px 12px rgba(0,0,0,.15)',
-                fontSize: 12,
-              }}
-              formatter={(value: number, name: string) => {
-                const label = name.includes('ncome') ? 'Income' : name.includes('xpense') ? 'Expense' : 'Investment';
-                return [formatCurrency(value), label];
-              }}
-            />
-            <Legend
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
-            />
-            <Area
-              type="monotone"
-              dataKey={incomeKey}
-              name="Income"
-              stroke="#6366f1"
-              strokeWidth={2}
-              fill="url(#incomeGrad)"
-              dot={false}
-              activeDot={{ r: 4, fill: '#6366f1' }}
-            />
-            <Area
-              type="monotone"
-              dataKey={expenseKey}
-              name="Expense"
-              stroke="#10b981"
-              strokeWidth={2}
-              fill="url(#expenseGrad)"
-              dot={false}
-              activeDot={{ r: 4, fill: '#10b981' }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+        {!isMounted ? (
+          <div className="w-full h-full" />
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
+              <XAxis
+                dataKey="label"
+                tick={{ fill: axisColor, fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                tick={{ fill: axisColor, fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v: number) => formatCurrency(v, true)}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: theme === 'dark' ? '#1a2035' : '#fff',
+                  border: theme === 'dark' ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0',
+                  borderRadius: 10,
+                  boxShadow: '0 4px 12px rgba(0,0,0,.15)',
+                  fontSize: 12,
+                }}
+                formatter={(value: any, name: any) => {
+                  const label = name?.includes('ncome') ? 'Income' : name?.includes('xpense') ? 'Expense' : 'Investment';
+                  return [formatCurrency(value), label];
+                }}
+              />
+              <Legend
+                iconType="circle"
+                iconSize={8}
+                wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
+              />
+              <Area
+                type="monotone"
+                dataKey={incomeKey}
+                name="Income"
+                stroke="#6366f1"
+                strokeWidth={2}
+                fill="url(#incomeGrad)"
+                dot={false}
+                activeDot={{ r: 4, fill: '#6366f1' }}
+              />
+              <Area
+                type="monotone"
+                dataKey={expenseKey}
+                name="Expense"
+                stroke="#10b981"
+                strokeWidth={2}
+                fill="url(#expenseGrad)"
+                dot={false}
+                activeDot={{ r: 4, fill: '#10b981' }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </Card>
   );

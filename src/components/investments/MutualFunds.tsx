@@ -78,11 +78,12 @@ export function MutualFunds() {
                 </div>
               </div>
 
-              {/* progress bar showing invested vs current */}
+              {/* progress bar showing invested vs current with accessible text labels */}
               <div className="mt-2 pt-2 border-t border-gray-200/40 dark:border-white/[0.03]">
                 <div className="flex justify-between text-[10px] text-gray-400 mb-1">
-                  <span>P&L</span>
+                  <span>P&L Health Component</span>
                   <span className={clsx('font-medium', isProfit ? 'text-mint' : 'text-coral')}>
+                    {isProfit ? 'PROFIT: ' : 'LOSS: '}
                     {formatCurrency(pnl)}
                   </span>
                 </div>

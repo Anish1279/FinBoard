@@ -53,9 +53,10 @@ export function Hero() {
     );
 
     // CTA
+    const isMobile = window.innerWidth < 768;
     tl.to('.hero-cta',
       { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power2.out', clearProps: 'transform' },
-      1.4,
+      isMobile ? 0.5 : 1.4, // faster on mobile
     );
 
     // scroll indicator

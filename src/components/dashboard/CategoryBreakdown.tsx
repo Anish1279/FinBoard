@@ -3,10 +3,12 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card } from '../ui/Card';
 import { useFinanceStore, selectCategoryBreakdown } from '../../store/finance';
 import { formatCurrency } from '../../lib/formatters';
+import { useMounted } from '../../hooks/use-mounted';
 
 export function CategoryBreakdown() {
   const transactions = useFinanceStore((s) => s.transactions);
   const theme = useFinanceStore((s) => s.theme);
+  const isMounted = useMounted();
   const breakdown = useMemo(() => selectCategoryBreakdown(transactions), [transactions]);
 
   // show top 6 categories, group rest into "Other"
@@ -40,36 +42,40 @@ export function CategoryBreakdown() {
       <div className="flex flex-col sm:flex-row lg:flex-col items-center gap-4">
         {/* donut chart */}
         <div className="w-48 h-48 shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="50%"
-                innerRadius="60%"
-                outerRadius="85%"
-                paddingAngle={2}
-                dataKey="total"
-                nameKey="label"
-                stroke="none"
-              >
-                {chartData.map((entry) => (
-                  <Cell key={entry.slug} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: theme === 'dark' ? '#1a2035' : '#fff',
-                  border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
-                  borderRadius: 10,
-                  padding: '8px 12px',
-                  fontSize: 13,
-                  boxShadow: '0 4px 12px rgba(0,0,0,.1)',
-                }}
-                formatter={(value) => formatCurrency(Number(value))}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          {!isMounted ? (
+            <div className="w-full h-full" />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="60%"
+                  outerRadius="85%"
+                  paddingAngle={2}
+                  dataKey="total"
+                  nameKey="label"
+                  stroke="none"
+                >
+                  {chartData.map((entry) => (
+                    <Cell key={entry.slug} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: theme === 'dark' ? '#1a2035' : '#fff',
+                    border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.08)' : '#e2e8f0'}`,
+                    borderRadius: 10,
+                    padding: '8px 12px',
+                    fontSize: 13,
+                    boxShadow: '0 4px 12px rgba(0,0,0,.1)',
+                  }}
+                  formatter={(value) => formatCurrency(Number(value))}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* legend */}

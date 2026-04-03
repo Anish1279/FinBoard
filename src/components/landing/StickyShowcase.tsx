@@ -101,7 +101,7 @@ export function StickyShowcase() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_right_center,rgba(2,132,199,0.1),transparent_50%)] z-0 pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-b from-surface-950 via-transparent to-surface-950 z-0 pointer-events-none" />
       
-      <div className="absolute left-0 top-0 w-full h-full lg:w-[50vw] flex items-center justify-center z-0 pointer-events-none" style={{ perspective: '1200px' }}>
+      <div className="absolute left-0 top-0 w-full h-full lg:w-[50vw] flex items-center justify-center z-0 pointer-events-none opacity-20 lg:opacity-100" style={{ perspective: '1200px' }}>
         <div className="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px] flex items-center justify-center" style={{ transformStyle: 'preserve-3d' }}>
           <div className="absolute inset-0 bg-sky-500/10 blur-[120px] rounded-full m-auto" />
           <div className="core-ring-1 absolute inset-0 border border-sky-500/20 rounded-full" />
@@ -130,7 +130,7 @@ export function StickyShowcase() {
                 </span>
               </div>
               <h3 
-                className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight tracking-tight"
+                className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight tracking-tight"
                 style={{ fontFamily: 'Syne, sans-serif' }}
               >
                 {step.title}
