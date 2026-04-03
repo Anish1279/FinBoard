@@ -8,16 +8,21 @@ import type {
   CategorySlug,
   MonthlySummary,
   CategorySummary,
+  InvestmentState,
 } from '../lib/types';
 import { INITIAL_FILTERS, CATEGORIES, STORAGE_KEYS } from '../lib/constants';
 import { api } from '../lib/mock-api';
 import { formatShortMonth } from '../lib/formatters';
+import { MOCK_INVESTMENT_STATE } from '../lib/investment-data';
 
 interface FinanceState {
   // data
   transactions: Transaction[];
   isLoading: boolean;
   error: string | null;
+
+  // investment data
+  investments: InvestmentState;
 
   // ui
   activeView: ViewTab;
@@ -67,6 +72,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
   transactions: [],
   isLoading: false,
   error: null,
+
+  investments: MOCK_INVESTMENT_STATE,
 
   activeView: 'dashboard',
   role: getInitialRole(),
@@ -203,28 +210,55 @@ export function selectFilteredTransactions(state: FinanceState): Transaction[] {
 export function selectTotals(transactions: Transaction[]) {
   let income = 0;
   let expense = 0;
+  let investmentInflow = 0;
+  let investmentOutflow = 0;
 
   for (const t of transactions) {
-    if (t.type === 'income') income += t.amount;
-    else expense += t.amount;
+    if (t.type === 'income') {
+      income += t.amount;
+    } else if (t.type === 'expense') {
+      expense += t.amount;
+    } else if (t.type === 'investment') {
+      if (t.investmentDirection === 'inflow') {
+        investmentInflow += t.amount;
+      } else {
+        investmentOutflow += t.amount;
+      }
+    }
   }
+
+  const netInvestmentCashFlow = investmentInflow - investmentOutflow;
+  const balance = income - expense + netInvestmentCashFlow;
+  const totalIncome = income + investmentInflow;
+  const savingsRate = totalIncome > 0 ? ((totalIncome - expense) / totalIncome) * 100 : 0;
 
   return {
     income,
     expense,
-    balance: income - expense,
-    savingsRate: income > 0 ? ((income - expense) / income) * 100 : 0,
+    balance,
+    investmentInflow,
+    investmentOutflow,
+    invested: investmentOutflow,
+    investmentReturns: investmentInflow,
+    netInvestmentCashFlow,
+    savingsRate,
   };
 }
 
 export function selectMonthlyBreakdown(transactions: Transaction[]): MonthlySummary[] {
-  const map = new Map<string, { income: number; expense: number }>();
+  const map = new Map<string, { income: number; expense: number; investment: number }>();
 
   for (const t of transactions) {
-    const monthKey = t.date.slice(0, 7); // 'YYYY-MM'
-    const entry = map.get(monthKey) ?? { income: 0, expense: 0 };
-    if (t.type === 'income') entry.income += t.amount;
-    else entry.expense += t.amount;
+    const monthKey = t.date.slice(0, 7);
+    const entry = map.get(monthKey) ?? { income: 0, expense: 0, investment: 0 };
+    if (t.type === 'income') {
+      entry.income += t.amount;
+    } else if (t.type === 'expense') {
+      entry.expense += t.amount;
+    } else if (t.type === 'investment') {
+      const sign = t.investmentDirection === 'inflow' ? 1 : -1;
+      entry.investment += t.amount * sign;
+    }
     map.set(monthKey, entry);
   }
 
@@ -235,7 +269,8 @@ export function selectMonthlyBreakdown(transactions: Transaction[]): MonthlySumm
       label: formatShortMonth(month),
       income: Math.round(data.income * 100) / 100,
       expense: Math.round(data.expense * 100) / 100,
-      balance: Math.round((data.income - data.expense) * 100) / 100,
+      investment: Math.round(data.investment * 100) / 100,
+      balance: Math.round((data.income - data.expense + data.investment) * 100) / 100,
     }));
 }
 
@@ -300,5 +335,27 @@ export function selectInsights(transactions: Transaction[], monthly: MonthlySumm
     avgDailySpend: Math.round(avgDailySpend * 100) / 100,
     biggestExpense,
     totalCategories: categories.length,
+  };
+}
+
+// ── Investment-specific selectors ──
+
+export function selectInvestmentBreakdown(transactions: Transaction[]) {
+  const investmentTxns = transactions.filter((t) => t.type === 'investment');
+
+  const byCategory = new Map<string, { inflow: number; outflow: number; count: number }>();
+  for (const t of investmentTxns) {
+    const entry = byCategory.get(t.category) ?? { inflow: 0, outflow: 0, count: 0 };
+    if (t.investmentDirection === 'inflow') entry.inflow += t.amount;
+    else entry.outflow += t.amount;
+    entry.count += 1;
+    byCategory.set(t.category, entry);
+  }
+
+  return {
+    totalInvested: investmentTxns.filter(t => t.investmentDirection === 'outflow').reduce((s, t) => s + t.amount, 0),
+    totalReturned: investmentTxns.filter(t => t.investmentDirection === 'inflow').reduce((s, t) => s + t.amount, 0),
+    byCategory: Object.fromEntries(byCategory),
+    count: investmentTxns.length,
   };
 }

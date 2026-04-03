@@ -1,6 +1,6 @@
 import type { Transaction } from './types';
 import { SEED_TRANSACTIONS } from './mock-data';
-import { STORAGE_KEYS } from './constants';
+import { STORAGE_KEYS, CURRENT_DATA_VERSION } from './constants';
 import { generateId } from './formatters';
 
 // simulates network delay between 200-600ms
@@ -23,14 +23,25 @@ function writeStorage(txns: Transaction[]) {
   localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(txns));
 }
 
+function needsReseed(): boolean {
+  try {
+    return localStorage.getItem(STORAGE_KEYS.DATA_VERSION) !== CURRENT_DATA_VERSION;
+  } catch { return true; }
+}
+
+function markVersion() {
+  localStorage.setItem(STORAGE_KEYS.DATA_VERSION, CURRENT_DATA_VERSION);
+}
+
 export const api = {
   async fetchTransactions(): Promise<Transaction[]> {
     await networkDelay();
 
     let stored = readStorage();
-    if (stored.length === 0) {
-      // first time: seed with mock data
+    if (stored.length === 0 || needsReseed()) {
+      // seed with latest mock data (includes investment transactions)
       writeStorage(SEED_TRANSACTIONS);
+      markVersion();
       stored = SEED_TRANSACTIONS;
     }
     return structuredClone(stored);

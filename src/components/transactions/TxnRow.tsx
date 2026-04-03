@@ -55,11 +55,18 @@ export const TxnRow = memo(function TxnRow({ txn, isAdmin, onEdit, onDelete }: T
             'text-sm font-semibold tabular-nums',
             txn.type === 'income'
               ? 'text-mint dark:text-mint-light'
+              : txn.type === 'investment'
+              ? 'text-accent dark:text-accent-light'
               : 'text-gray-800 dark:text-gray-200'
           )}
         >
-          {txn.type === 'income' ? '+' : '-'}{formatCurrency(txn.amount)}
+          {txn.type === 'income' ? '+' : txn.type === 'investment' ? (txn.investmentDirection === 'inflow' ? '+' : '-') : '-'}{formatCurrency(txn.amount)}
         </span>
+        {txn.type === 'investment' && (
+          <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+            {txn.investmentDirection === 'inflow' ? 'Returns' : 'Deployed'}
+          </div>
+        )}
       </div>
 
       {/* admin actions */}
@@ -102,6 +109,9 @@ function getCategoryEmoji(cat: string): string {
     rent: '🏠',
     subscriptions: '💳',
     other: '📦',
+    stocks: '📊',
+    fno: '⚡',
+    mutual_funds: '🥧',
   };
   return map[cat] ?? '📦';
 }

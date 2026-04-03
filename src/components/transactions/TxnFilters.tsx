@@ -101,6 +101,7 @@ export function TxnFilters() {
           <option value="all">All Types</option>
           <option value="income">Income</option>
           <option value="expense">Expense</option>
+          <option value="investment">Investment</option>
         </select>
 
         <select value={filters.category} onChange={handleCategory} className={clsx(selectBase, 'w-auto')}>

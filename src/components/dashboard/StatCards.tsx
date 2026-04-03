@@ -1,10 +1,13 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, BarChart3 } from 'lucide-react';
 import clsx from 'clsx';
 import { Card } from '../ui/Card';
 import { useFinanceStore, selectTotals, selectMonthlyBreakdown } from '../../store/finance';
 import { formatCurrency, formatPercent } from '../../lib/formatters';
+import type { PortfolioSummary } from '../../lib/types';
+
+type Totals = ReturnType<typeof selectTotals>;
 
 interface StatConfig {
   key: string;
@@ -12,20 +15,25 @@ interface StatConfig {
   icon: typeof Wallet;
   gradientClass: string;
   iconColor: string;
-  getValue: (totals: ReturnType<typeof selectTotals>) => number;
+  getValue: (totals: Totals, portfolio: PortfolioSummary) => number;
   isCurrency: boolean;
   suffix?: string;
+  subtitle?: (totals: Totals, portfolio: PortfolioSummary) => string | null;
 }
 
 const STATS: StatConfig[] = [
   {
     key: 'balance',
-    label: 'Total Balance',
+    label: 'Net Worth',
     icon: Wallet,
     gradientClass: 'stat-gradient-balance',
     iconColor: 'text-accent',
-    getValue: (t) => t.balance,
+    getValue: (t, p) => (t.income - t.expense) + (p.currentValue - t.invested + t.investmentReturns),
     isCurrency: true,
+    subtitle: (t) => {
+      const cash = t.income - t.expense;
+      return `Cash: ${formatCurrency(cash, true)}`;
+    },
   },
   {
     key: 'income',
@@ -35,6 +43,7 @@ const STATS: StatConfig[] = [
     iconColor: 'text-mint',
     getValue: (t) => t.income,
     isCurrency: true,
+    subtitle: (t) => t.investmentReturns > 0 ? `+${formatCurrency(t.investmentReturns, true)} inv. returns` : null,
   },
   {
     key: 'expense',
@@ -46,24 +55,29 @@ const STATS: StatConfig[] = [
     isCurrency: true,
   },
   {
-    key: 'savings',
-    label: 'Savings Rate',
-    icon: PiggyBank,
-    gradientClass: 'stat-gradient-savings',
-    iconColor: 'text-amber-500',
-    getValue: (t) => t.savingsRate,
-    isCurrency: false,
-    suffix: '%',
+    key: 'invested',
+    label: 'Portfolio',
+    icon: BarChart3,
+    gradientClass: 'stat-gradient-investment',
+    iconColor: 'text-cyan-400',
+    getValue: (_t, p) => p.currentValue,
+    isCurrency: true,
+    subtitle: (_t, p) => {
+      const pnl = p.totalReturns;
+      return pnl >= 0
+        ? `P&L: +${formatCurrency(pnl, true)} (${formatPercent(p.totalReturnsPercent)})`
+        : `P&L: ${formatCurrency(pnl, true)} (${formatPercent(p.totalReturnsPercent)})`;
+    },
   },
 ];
 
 export function StatCards() {
   const transactions = useFinanceStore((s) => s.transactions);
+  const portfolio = useFinanceStore((s) => s.investments.portfolio);
 
   const totals = useMemo(() => selectTotals(transactions), [transactions]);
   const monthly = useMemo(() => selectMonthlyBreakdown(transactions), [transactions]);
 
-  // compute month-over-month change for income and expenses
   const momChanges = useMemo(() => {
     if (monthly.length < 2) return { income: null, expense: null };
     const curr = monthly[monthly.length - 1];
@@ -77,10 +91,11 @@ export function StatCards() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       {STATS.map((stat, idx) => {
-        const value = stat.getValue(totals);
+        const value = stat.getValue(totals, portfolio);
         const changeVal =
           stat.key === 'income' ? momChanges.income :
           stat.key === 'expense' ? momChanges.expense : null;
+        const subtitle = stat.subtitle?.(totals, portfolio) ?? null;
 
         return (
           <motion.div
@@ -120,6 +135,10 @@ export function StatCards() {
                   </span>
                 )}
               </div>
+
+              {subtitle && (
+                <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1.5">{subtitle}</p>
+              )}
             </Card>
           </motion.div>
         );

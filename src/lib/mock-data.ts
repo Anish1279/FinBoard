@@ -1,7 +1,8 @@
-import type { Transaction, CategorySlug } from './types';
+import type { Transaction, CategorySlug, InvestmentDirection } from './types';
 
 // realistic transaction data spanning Oct 2025 to Mar 2026
-const RAW: Array<[string, string, number, 'income' | 'expense', CategorySlug]> = [
+type TxnTuple = [string, string, number, 'income' | 'expense' | 'investment', CategorySlug, InvestmentDirection?];
+const RAW: TxnTuple[] = [
   // October 2025
   ['2025-10-01', 'Monthly Salary - Acme Corp',        5200,   'income',  'salary'],
   ['2025-10-02', 'Grocery run at Whole Foods',          87.43, 'expense', 'food'],
@@ -112,15 +113,57 @@ const RAW: Array<[string, string, number, 'income' | 'expense', CategorySlug]> =
   ['2026-03-27', 'Taxi rides - conference week',        54.20, 'expense', 'travel'],
   ['2026-03-29', 'Investment payout - ETFs',           168.75, 'income',  'investments'],
   ['2026-03-31', 'Phone bill',                          65,    'expense', 'bills'],
+
+  // ── Investment Transactions ──
+
+  // October 2025
+  ['2025-10-05', 'Bought 15 shares AAPL',             2587.50, 'investment', 'stocks',       'outflow'],
+  ['2025-10-10', 'SIP - Vanguard Total Stock Market',  500,    'investment', 'mutual_funds', 'outflow'],
+  ['2025-10-18', 'Bought 5 shares NVDA',              2400.00, 'investment', 'stocks',       'outflow'],
+
+  // November 2025
+  ['2025-11-03', 'Bought 8 shares TSLA',              1936.00, 'investment', 'stocks',       'outflow'],
+  ['2025-11-10', 'SIP - Vanguard Total Stock Market',  500,    'investment', 'mutual_funds', 'outflow'],
+  ['2025-11-15', 'SIP - Fidelity Growth Fund',         300,    'investment', 'mutual_funds', 'outflow'],
+  ['2025-11-22', 'Sold AAPL Call Option - Premium',     420,   'investment', 'fno',          'inflow'],
+
+  // December 2025
+  ['2025-12-04', 'Bought 12 shares MSFT',             4538.40, 'investment', 'stocks',       'outflow'],
+  ['2025-12-10', 'SIP - Vanguard Total Stock Market',  500,    'investment', 'mutual_funds', 'outflow'],
+  ['2025-12-15', 'SIP - Fidelity Growth Fund',         300,    'investment', 'mutual_funds', 'outflow'],
+  ['2025-12-20', 'Bought 10 shares AMZN',             1784.00, 'investment', 'stocks',       'outflow'],
+
+  // January 2026
+  ['2026-01-06', 'Bought 7 shares GOOGL',              988.40, 'investment', 'stocks',       'outflow'],
+  ['2026-01-10', 'SIP - Vanguard Total Stock Market',  500,    'investment', 'mutual_funds', 'outflow'],
+  ['2026-01-15', 'SIP - Fidelity Growth Fund',         300,    'investment', 'mutual_funds', 'outflow'],
+  ['2026-01-20', 'Bought NVDA Call $560 Apr',          1200,   'investment', 'fno',          'outflow'],
+  ['2026-01-28', 'Bought 20 shares JPM',              3916.00, 'investment', 'stocks',       'outflow'],
+
+  // February 2026
+  ['2026-02-05', 'Bought 6 shares META',              2913.00, 'investment', 'stocks',       'outflow'],
+  ['2026-02-10', 'SIP - Vanguard Total Stock Market',  500,    'investment', 'mutual_funds', 'outflow'],
+  ['2026-02-15', 'SIP - BlackRock International',       200,   'investment', 'mutual_funds', 'outflow'],
+  ['2026-02-20', 'Sold TSLA Put Option - Profit',       850,   'investment', 'fno',          'inflow'],
+  ['2026-02-26', 'SIP - Fidelity Growth Fund',          300,   'investment', 'mutual_funds', 'outflow'],
+
+  // March 2026
+  ['2026-03-05', 'SIP - Vanguard Total Stock Market',  500,    'investment', 'mutual_funds', 'outflow'],
+  ['2026-03-10', 'Sold 3 shares AAPL - Profit',        569.52, 'investment', 'stocks',       'inflow'],
+  ['2026-03-15', 'SIP - Fidelity Growth Fund',          300,   'investment', 'mutual_funds', 'outflow'],
+  ['2026-03-20', 'SPY Future - Margin',                5280,   'investment', 'fno',          'outflow'],
+  ['2026-03-25', 'SIP - BlackRock International',        200,  'investment', 'mutual_funds', 'outflow'],
+  ['2026-03-30', 'Dividend - MSFT',                     156,   'investment', 'stocks',       'inflow'],
 ];
 
 let counter = 1;
 
-export const SEED_TRANSACTIONS: Transaction[] = RAW.map(([date, description, amount, type, category]) => ({
+export const SEED_TRANSACTIONS: Transaction[] = RAW.map(([date, description, amount, type, category, investmentDirection]) => ({
   id: `txn_${String(counter++).padStart(3, '0')}`,
   date,
   description,
   amount,
   type,
   category,
+  ...(investmentDirection ? { investmentDirection } : {}),
 }));

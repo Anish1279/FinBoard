@@ -24,12 +24,12 @@ export function MonthlyComparison() {
   return (
     <Card>
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">
-        Monthly Income vs Expenses
+        Monthly Breakdown
       </h3>
 
       <div className="h-64 sm:h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={monthly} margin={{ top: 4, right: 4, left: -10, bottom: 0 }} barGap={4}>
+          <BarChart data={monthly.map(m => ({ ...m, investmentAbs: Math.abs(m.investment) }))} margin={{ top: 4, right: 4, left: -10, bottom: 0 }} barGap={4}>
             <CartesianGrid stroke={gridColor} strokeDasharray="3 3" vertical={false} />
 
             <XAxis
@@ -68,6 +68,7 @@ export function MonthlyComparison() {
 
             <Bar dataKey="income" name="Income" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={36} />
             <Bar dataKey="expense" name="Expenses" fill="#f43f5e" radius={[4, 4, 0, 0]} maxBarSize={36} />
+            <Bar dataKey="investmentAbs" name="Invested" fill="#22d3ee" radius={[4, 4, 0, 0]} maxBarSize={36} />
           </BarChart>
         </ResponsiveContainer>
       </div>

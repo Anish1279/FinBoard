@@ -8,6 +8,8 @@ import {
   Shield,
   Eye,
   Wallet,
+  TrendingUp,
+  Lightbulb,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
@@ -23,6 +25,8 @@ export function TopBar() {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+    { path: '/investments', label: 'Investments', icon: TrendingUp },
+    { path: '/insights', label: 'Insights', icon: Lightbulb },
   ];
 
   return (

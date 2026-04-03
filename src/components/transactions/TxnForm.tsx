@@ -5,7 +5,7 @@ import { useFinanceStore } from '../../store/finance';
 import { CATEGORIES } from '../../lib/constants';
 import { Button } from '../ui/Button';
 import { Modal } from '../ui/Modal';
-import type { TransactionType, CategorySlug, Transaction } from '../../lib/types';
+import type { TransactionType, CategorySlug, Transaction, InvestmentDirection } from '../../lib/types';
 
 interface FormData {
   description: string;
@@ -14,6 +14,7 @@ interface FormData {
   category: CategorySlug;
   date: string;
   note: string;
+  investmentDirection: InvestmentDirection;
 }
 
 function toFormData(txn: Transaction | null): FormData {
@@ -25,6 +26,7 @@ function toFormData(txn: Transaction | null): FormData {
       category: 'food',
       date: new Date().toISOString().slice(0, 10),
       note: '',
+      investmentDirection: 'outflow',
     };
   }
   return {
@@ -34,6 +36,7 @@ function toFormData(txn: Transaction | null): FormData {
     category: txn.category,
     date: txn.date,
     note: txn.note ?? '',
+    investmentDirection: txn.investmentDirection ?? 'outflow',
   };
 }
 
@@ -89,6 +92,7 @@ export function TxnForm() {
         category: form.category,
         date: form.date,
         note: form.note.trim() || undefined,
+        ...(form.type === 'investment' ? { investmentDirection: form.investmentDirection } : {}),
       };
 
       if (isEditing && editingTxn) {
@@ -120,13 +124,12 @@ export function TxnForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* type toggle */}
         <div className="flex gap-2 p-1 bg-gray-100 dark:bg-white/[0.04] rounded-lg">
-          {(['expense', 'income'] as TransactionType[]).map((t) => (
+          {(['expense', 'income', 'investment'] as TransactionType[]).map((t) => (
             <button
               key={t}
               type="button"
               onClick={() => {
                 updateField('type', t);
-                // reset category to first of the new type
                 const firstCat = Object.values(CATEGORIES).find((c) => c.type === t);
                 if (firstCat) updateField('category', firstCat.slug);
               }}
@@ -135,11 +138,13 @@ export function TxnForm() {
                 form.type === t
                   ? t === 'income'
                     ? 'bg-mint/10 text-mint shadow-sm'
+                    : t === 'investment'
+                    ? 'bg-accent/10 text-accent shadow-sm'
                     : 'bg-coral/10 text-coral shadow-sm'
                   : 'text-gray-500 dark:text-gray-400'
               )}
             >
-              {t === 'income' ? 'Income' : 'Expense'}
+              {t === 'income' ? 'Income' : t === 'investment' ? 'Investment' : 'Expense'}
             </button>
           ))}
         </div>
@@ -210,6 +215,34 @@ export function TxnForm() {
             ))}
           </select>
         </div>
+
+        {/* investment direction */}
+        {form.type === 'investment' && (
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
+              Cash Flow Direction
+            </label>
+            <div className="flex gap-2 p-1 bg-gray-100 dark:bg-white/[0.04] rounded-lg">
+              {(['outflow', 'inflow'] as InvestmentDirection[]).map((dir) => (
+                <button
+                  key={dir}
+                  type="button"
+                  onClick={() => updateField('investmentDirection', dir)}
+                  className={clsx(
+                    'flex-1 h-8 rounded-md text-xs font-medium transition-all',
+                    form.investmentDirection === dir
+                      ? dir === 'outflow'
+                        ? 'bg-coral/10 text-coral shadow-sm'
+                        : 'bg-mint/10 text-mint shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400'
+                  )}
+                >
+                  {dir === 'outflow' ? 'Buy / Deploy' : 'Sell / Returns'}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* note */}
         <div>

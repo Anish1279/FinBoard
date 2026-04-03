@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -8,7 +8,13 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Wallet,
+  TrendingUp,
+  BarChart3,
+  Activity,
+  PieChart,
+  Lightbulb,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useFinanceStore } from '../../store/finance';
@@ -19,11 +25,23 @@ interface NavItem {
   path: string;
   label: string;
   icon: typeof LayoutDashboard;
+  children?: { path: string; label: string; icon: typeof LayoutDashboard }[];
 }
 
 const NAV_ITEMS: NavItem[] = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
+  {
+    path: '/investments',
+    label: 'Investments',
+    icon: TrendingUp,
+    children: [
+      { path: '/investments?tab=stocks', label: 'Stocks', icon: BarChart3 },
+      { path: '/investments?tab=fno', label: 'F&O', icon: Activity },
+      { path: '/investments?tab=mutual-funds', label: 'Mutual Funds', icon: PieChart },
+    ],
+  },
+  { path: '/insights', label: 'Insights', icon: Lightbulb },
 ];
 
 export function Sidebar() {
@@ -32,6 +50,9 @@ export function Sidebar() {
   const toggleSidebar = useFinanceStore((s) => s.toggleSidebar);
   const role = useFinanceStore((s) => s.role);
   const setRole = useFinanceStore((s) => s.setRole);
+  const [expandedNav, setExpandedNav] = useState<string | null>(
+    location.pathname === '/investments' ? '/investments' : null
+  );
 
   const roleOptions: { value: Role; label: string; icon: typeof Shield }[] = useMemo(
     () => [
@@ -40,6 +61,11 @@ export function Sidebar() {
     ],
     []
   );
+
+  const isNavActive = (item: NavItem) => {
+    if (item.children) return location.pathname === item.path.split('?')[0];
+    return location.pathname === item.path;
+  };
 
   return (
     <aside
@@ -51,8 +77,8 @@ export function Sidebar() {
       )}
     >
       {/* branding */}
-      <Link 
-        to="/" 
+      <Link
+        to="/"
         className="flex items-center gap-3 px-4 h-16 border-b border-gray-100 dark:border-white/[0.04] hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
       >
         <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-accent/10 text-accent shrink-0">
@@ -73,42 +99,128 @@ export function Sidebar() {
       </Link>
 
       {/* navigation */}
-      <nav className="flex-1 py-4 px-3 space-y-1">
+      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = isNavActive(item);
+          const hasChildren = item.children && item.children.length > 0;
+          const isExpanded = expandedNav === item.path;
+
           return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={clsx(
-                'relative flex items-center gap-3 w-full rounded-xl px-3 h-10 text-sm font-medium transition-colors',
-                isActive
-                  ? 'bg-accent/10 text-accent'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.04]'
+            <div key={item.path}>
+              {hasChildren ? (
+                <>
+                  <div className="flex items-center">
+                    <Link
+                      to={item.path.split('?')[0]}
+                      className={clsx(
+                        'relative flex items-center gap-3 flex-1 rounded-xl px-3 h-10 text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-accent/10 text-accent'
+                          : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.04]'
+                      )}
+                      title={item.label}
+                    >
+                      <item.icon size={19} className="shrink-0" />
+                      <AnimatePresence>
+                        {sidebarOpen && (
+                          <motion.span
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="whitespace-nowrap flex-1"
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          layoutId="sidebar-active"
+                          className="absolute inset-0 rounded-xl bg-accent/10 -z-10"
+                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                    </Link>
+                    {sidebarOpen && (
+                      <button
+                        onClick={() => setExpandedNav(isExpanded ? null : item.path)}
+                        className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-colors"
+                      >
+                        <ChevronDown
+                          size={14}
+                          className={clsx('transition-transform duration-200', isExpanded && 'rotate-180')}
+                        />
+                      </button>
+                    )}
+                  </div>
+                  <AnimatePresence>
+                    {isExpanded && sidebarOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="ml-5 pl-3 border-l border-gray-200/60 dark:border-white/[0.06] space-y-0.5 mt-1">
+                          {item.children!.map((child) => {
+                            const childActive = location.pathname + location.search === child.path
+                              || (location.pathname === '/investments' && child.path.includes(`tab=${new URLSearchParams(location.search).get('tab')}`));
+                            return (
+                              <Link
+                                key={child.path}
+                                to={child.path}
+                                className={clsx(
+                                  'flex items-center gap-2.5 rounded-lg px-2.5 h-8 text-xs font-medium transition-colors',
+                                  childActive
+                                    ? 'text-accent bg-accent/5'
+                                    : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.04]'
+                                )}
+                              >
+                                <child.icon size={14} className="shrink-0" />
+                                <span>{child.label}</span>
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              ) : (
+                <Link
+                  to={item.path}
+                  className={clsx(
+                    'relative flex items-center gap-3 w-full rounded-xl px-3 h-10 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'bg-accent/10 text-accent'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.04]'
+                  )}
+                  title={item.label}
+                >
+                  <item.icon size={19} className="shrink-0" />
+                  <AnimatePresence>
+                    {sidebarOpen && (
+                      <motion.span
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="whitespace-nowrap"
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {isActive && (
+                    <motion.div
+                      layoutId="sidebar-active"
+                      className="absolute inset-0 rounded-xl bg-accent/10 -z-10"
+                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                </Link>
               )}
-              title={item.label}
-            >
-              <item.icon size={19} className="shrink-0" />
-              <AnimatePresence>
-                {sidebarOpen && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="whitespace-nowrap"
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-              {isActive && (
-                <motion.div
-                  layoutId="sidebar-active"
-                  className="absolute inset-0 rounded-xl bg-accent/10 -z-10"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-            </Link>
+            </div>
           );
         })}
       </nav>

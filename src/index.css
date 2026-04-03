@@ -57,6 +57,9 @@
   .stat-gradient-savings {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, transparent 60%);
   }
+  .stat-gradient-investment {
+    background: linear-gradient(135deg, rgba(34, 211, 238, 0.08) 0%, transparent 60%);
+  }
 }
 
 @layer utilities {
